@@ -35,7 +35,8 @@ class Image{
     char _width[4];
     char _height[4];
     char _framerate[1];
-    char identifier[4];
+    char _identifier[3];
+    unsigned int bitsPerPixel;
     unsigned int height;
     unsigned int width;
     unsigned int headerSize;
@@ -56,6 +57,7 @@ public:
     int getFramerate();
     int getWidth();
     int getHeight();
+    int getBitsPerColor();
 };
 
 #endif 

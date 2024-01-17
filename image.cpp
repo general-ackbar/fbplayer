@@ -15,7 +15,7 @@ Image::Image(const char *filename){
     ifstream myfile (filename, ios::binary);
     
     
-    myfile.read(this->identifier, 4);
+    myfile.read(this->_identifier, 4);    
     myfile.read(this->_header_length, 1);
     myfile.read(this->_width, 2);
     myfile.read(this->_height, 2);
@@ -25,6 +25,7 @@ Image::Image(const char *filename){
 	this->headerSize = (int)this->_header_length[0];
     this->width = bytes_to_u16(_width[0], _width[1]);
     this->height = bytes_to_u16(_height[0], _height[1]);
+    this->bitsPerPixel = (int)this->_identifier[3];
     this->totalframes = 1;
     this->framerate = 1;
     
@@ -68,8 +69,6 @@ Color Image::getColor565(int x, int y) {
     
     uint16_t rgb565 = ((uint8_t)this->data[pos] << 8) | (uint8_t)this->data[pos+1];          
 	
-          
-          
     c.red = (rgb565 & 0b1111100000000000) >> 8;
     c.green = (rgb565 & 0b0000011111100000) >> 3;
     c.blue = (rgb565 & 0b0000000000011111) << 3;
@@ -115,4 +114,5 @@ int Image::getHeight() {return this->height; }
 int Image::getTotalFrames() {return this->totalframes; }
 int Image::getFramerate() {return this->framerate; }
 uint8_t* Image::getFrameData() {return (uint8_t*)this->data; }
+int Image::getBitsPerColor() {return this->bitsPerPixel; }
 

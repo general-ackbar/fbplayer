@@ -70,7 +70,6 @@ int main (int argc, char *argv[])
 		char *fbdata =static_cast<char*>( mmap (0, fb_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, (off_t)0));
 		
 		//Clear screen
-		//system ("CLS");
 		memset (fbdata, 0, fb_data_size);
 
 		if (ends_with(image_path, ".lmi")) {		
@@ -80,7 +79,7 @@ int main (int argc, char *argv[])
 			int width = image->getWidth();
 			int height = image->getHeight();
 			printf("Image dimensions: %i x %i\n", width, height);
-			if(image->identifier != 0x10 )
+			if(image->getBitsPerColor() != 16 )
 			{
 				printf("This viewer only support images encoded with the rgb565 colorspace.\n");
 				return 1;
