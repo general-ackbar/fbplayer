@@ -80,6 +80,11 @@ int main (int argc, char *argv[])
 			int width = image->getWidth();
 			int height = image->getHeight();
 			printf("Image dimensions: %i x %i\n", width, height);
+			if(image->identifier != 0x10 )
+			{
+				printf("This viewer only support images encoded with the rgb565 colorspace.\n");
+				return 1;
+			}
 			
 			//Find center
 			int offsetX = (fb_width - width)/2;
