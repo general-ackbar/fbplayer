@@ -1,0 +1,51 @@
+#include <linux/fb.h>
+
+
+struct fb_var_screeninfo vinfo;
+
+
+int main (int argc, char **argv)
+{
+	int ret = 0; // Exit value
+
+
+	int fbfd = open (fbdev, O_RDWR);
+	if (fbfd >= 0)
+  	{
+	
+		struct fb_var_screeninfo vinfo;
+
+		ioctl (fbfd, FBIOGET_VSCREENINFO, &vinfo);
+
+		int fb_width = vinfo.xres;
+		int fb_height = vinfo.yres;
+		int fb_bpp = vinfo.bits_per_pixel;
+		int fb_bytes = fb_bpp / 8;
+		
+		
+		int fb_data_size = fb_width * fb_height * fb_bytes;
+
+		char *fbdata = mmap (0, fb_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, (off_t)0);
+		
+		//Blank
+		memset (fbdata, 0, fb_data_size);
+		
+		int y = 10;
+		int x = 10;
+		
+		int offset = (y * fb_width + x) * 4;
+		
+		
+		int r = 255, g = 0, b = 0;
+		fbdata [offset + 0] = b;
+		fbdata [offset + 1] = g;
+		fbdata [offset + 2] = r;
+		fbdata [offset + 3] = 0;
+		
+		munmap (fbdata, fb_data_size);
+		close (fbfd);
+		
+	}
+
+  	return ret;
+}
