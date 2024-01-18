@@ -114,6 +114,9 @@ Color Lmi::getARGB8888FromFrame(int x, int y, int frame) {
     return c;  
 }
 
+Color Lmi::getBinaryFromFrame(int x, int y, int frame, bool vertical=false)
+{}
+
 int Lmi::getWidth() {return this->width; }
 int Lmi::getHeight() {return this->height; }
 int Lmi::getTotalFrames() {return this->totalframes; }

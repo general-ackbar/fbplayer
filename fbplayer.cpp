@@ -32,8 +32,8 @@ int main (int argc, char *argv[])
 	//Use fb0 as default output
 	char *fbdev = "/dev/fb0";
 
-	if(argc == 2)
-		fbdev = argv[2;]
+	if(argc == 3)
+		fbdev = argv[2];
 
 
 	int fbfd = open (fbdev, O_RDWR);
