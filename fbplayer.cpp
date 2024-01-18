@@ -11,7 +11,7 @@
 #include <linux/fb.h>
 #include <sys/ioctl.h>
 
-#include "image.h"
+#include "Lmi.h"
 #include "Eva.h"
 
 bool ends_with(char const *str, char const *suffix)
@@ -75,11 +75,11 @@ int main (int argc, char *argv[])
 		if (ends_with(image_path, ".lmi")) {		
 			//Read LMI data
 
-			Image *image = new Image(image_path);	
-			int width = image->getWidth();
-			int height = image->getHeight();
+			Lmi *lmi = new Lmi(image_path);	
+			int width = lmi->getWidth();
+			int height = lmi->getHeight();
 			printf("Image dimensions: %i x %i\n", width, height);
-			if(image->getBitsPerColor() != 16 )
+			if(lmi->getBitsPerColor() != 16 )
 			{
 				printf("This viewer only support images encoded with the rgb565 colorspace.\n");
 				return 1;
@@ -90,15 +90,17 @@ int main (int argc, char *argv[])
 			int offsetY = (fb_height - height)/2;
 			//int frame_size = width * height * 2;
 		
-			for( int frameIdx=0; frameIdx < image->getTotalFrames(); ++frameIdx )
+			for( int frameIdx=0; frameIdx < lmi->getTotalFrames(); ++frameIdx )
 			{
 			//Traverse LMI data and write to screen
 			for(int y = 0; y < height; y++)
 			{
+				if(y > fb_height) continue;
 				for(int x = 0; x < width; x++)
 				{
-
-					Color c = image->getColor565FromFrame( x , y, frameIdx );
+					if(x > fb_width) continue;
+					
+					Color c = lmi->getRGB565FromFrame( x , y, frameIdx );
 					int screen_offset = (( offsetY + y ) * fb_width + ( offsetX + x )) * 4;
 					
 					fbdata [screen_offset + 0] = c.blue;
@@ -108,7 +110,7 @@ int main (int argc, char *argv[])
 
 				}
 			}
-			usleep(1000*1000 / image->getFramerate());
+			usleep(1000*1000 / lmi->getFramerate());
 			}
 			
 		}

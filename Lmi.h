@@ -1,5 +1,5 @@
 //
-//  Image.h
+//  Lmi.h
 //  LMIReader
 //
 //  Created by Jonatan Yde on 06/12/2017.
@@ -8,8 +8,8 @@
 
 
 
-#ifndef Image_h
-#define Image_h
+#ifndef Lmi_h
+#define Lmi_h
 
 
 #include <iostream>
@@ -29,7 +29,7 @@ struct Color {
 
 #define bytes_to_u16(MSB,LSB) (((unsigned int) ((unsigned char) MSB)) & 255)<<8 | (((unsigned char) LSB)&255)
 
-class Image{
+class Lmi{
     char* data;
     char _header_length[1];
     char _width[4];
@@ -47,11 +47,13 @@ private:
     char* readFileBytes(const char *name);
     
 public:
-	Image(){};
-    Image(const char* filename);
-    Color getColor565(int x, int y);
-    Color getColor565FromFrame(int x, int y, int frame);
-    Color getColorARGB(int x, int y);
+	Lmi(){};
+    Lmi(const char* filename);    
+    Color getARGB8888FromFrame(int x, int y, int frame);
+    Color getRGB888FromFrame(int x, int  y, int frame);
+    Color getRGB565FromFrame(int x, int y, int frame);
+    Color getRGB332FromFrame(int x, int  y, int frame);
+    Color getBinaryFromFrame(int x, int  y, int frame, bool vertical);
     uint8_t* getFrameData();
     int getTotalFrames();
     int getFramerate();

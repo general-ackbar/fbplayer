@@ -1,15 +1,15 @@
 //
-//  Image.cc
+//  Lmi.cpp
 //  LMIReader
 //
 //  Created by Jonatan Yde on 06/12/2017.
 //  Copyright © 2017 Codeninja. All rights reserved.
 //
 
-#include "image.h"
+#include "Lmi.h"
 
 
-Image::Image(const char *filename){
+Lmi::Lmi(const char *filename){
    
     
     ifstream myfile (filename, ios::binary);
@@ -42,7 +42,7 @@ Image::Image(const char *filename){
     
 }
 
-char* Image::readFileBytes(const char *name)
+char* Lmi::readFileBytes(const char *name)
 {
     ifstream fl(name);
     fl.seekg( 0, ios::end );
@@ -61,44 +61,49 @@ char* Image::readFileBytes(const char *name)
     return ret;
 }
 
-
-Color Image::getColor565(int x, int y) {  
-    int pos = this->width * 2 * y + (x*2);
-    
-    Color c;
-    
-    uint16_t rgb565 = ((uint8_t)this->data[pos] << 8) | (uint8_t)this->data[pos+1];          
-	
-    c.red = (rgb565 & 0b1111100000000000) >> 8;
-    c.green = (rgb565 & 0b0000011111100000) >> 3;
-    c.blue = (rgb565 & 0b0000000000011111) << 3;
-
-	//printf("%hx -> (%i,%i,%i)", rgb565, c.red, c.green, c.blue);
-    
-    return c;  
-}
-
-Color Image::getColor565FromFrame(int x, int y, int frame) {  
+Color Lmi::getRGB565FromFrame(int x, int y, int frame) {  
     int pos = (this->width * 2 * y + (x*2)) + ((this->width * 2 * this->height * 2) * frame);
     //printf("pos: %i, ", pos);
     Color c;
     
     uint16_t rgb565 = ((uint8_t)this->data[pos] << 8) | (uint8_t)this->data[pos+1];          
-	
-          
-          
+
     c.red = (rgb565 & 0b1111100000000000) >> 8;
     c.green = (rgb565 & 0b0000011111100000) >> 3;
     c.blue = (rgb565 & 0b0000000000011111) << 3;
 
-	//printf("%hx -> (%i,%i,%i)", rgb565, c.red, c.green, c.blue);
+    return c;  
+}
+
+Color Lmi::getRGB332FromFrame(int x, int y, int frame) {  
     
+    int pos = (this->width * y + x) + ((this->width * this->height) * frame);
+    
+    uint8_t rgb332 = (uint8_t)this->data[pos]; 
+
+    Color c;          
+    c.red = (this->data[pos] >> 5) * 32;
+    c.green = ((this->data[pos] & 28) >> 2) * 32;
+    c.blue = (this->data[pos] & 3) *64;    
+    return c;  
+}
+
+Color Lmi::getRGB888FromFrame(int x, int y, int frame) {  
+    
+
+    int pos = (this->width * 3 * y + (x*3)) + ((this->width * 3 * this->height * 3) * frame);
+    
+    Color c;    
+    c.red = (unsigned char)this->data[pos];
+    c.blue = (unsigned char)this->data[pos+1];
+    c.green = (unsigned char) this->data[pos+2];
     return c;  
 }
 
 
-Color Image::getColorARGB(int x, int y) {  
-    int pos = this->width * 4 * y + (x*4);
+
+Color Lmi::getARGB8888FromFrame(int x, int y, int frame) {  
+    int pos = (this->width * 4 * y + (x*2)) + ((this->width * 4 * this->height * 4) * frame);
     
     Color c;
     c.red = (unsigned char)this->data[pos];
@@ -109,10 +114,10 @@ Color Image::getColorARGB(int x, int y) {
     return c;  
 }
 
-int Image::getWidth() {return this->width; }
-int Image::getHeight() {return this->height; }
-int Image::getTotalFrames() {return this->totalframes; }
-int Image::getFramerate() {return this->framerate; }
-uint8_t* Image::getFrameData() {return (uint8_t*)this->data; }
-int Image::getBitsPerColor() {return this->bitsPerPixel; }
+int Lmi::getWidth() {return this->width; }
+int Lmi::getHeight() {return this->height; }
+int Lmi::getTotalFrames() {return this->totalframes; }
+int Lmi::getFramerate() {return this->framerate; }
+uint8_t* Lmi::getFrameData() {return (uint8_t*)this->data; }
+int Lmi::getBitsPerColor() {return this->bitsPerPixel; }
 
