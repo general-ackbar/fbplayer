@@ -3,7 +3,7 @@ INC_DIR = .
 LIB_DIR = .
 CFLAGS:= $(CFLAGS) -O2 -g -Wall -std=c++11
 DEPS =  
-OBJ = fbplayer.o Eva.o image.o 
+OBJ = fbplayer.o Eva.o Lmi.o 
 LDFLAGS = -lm -lpthread
 PROGRAMS = fbplayer
 

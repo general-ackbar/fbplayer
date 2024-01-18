@@ -35,7 +35,7 @@ class Lmi{
     char _width[4];
     char _height[4];
     char _framerate[1];
-    char _identifier[3];
+    char _identifier[4];
     unsigned int bitsPerPixel;
     unsigned int height;
     unsigned int width;
