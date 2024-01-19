@@ -8,7 +8,17 @@
 #include <iostream>
 #include <fcntl.h>  
 #include <unistd.h> 
-#include <linux/fb.h>
+
+#include <errno.h>
+extern int errno ;
+//#define __DUMMY__
+
+#ifndef __DUMMY__
+	#include <linux/fb.h>
+#else
+	#include "fb_dummy.h"
+#endif
+
 #include <sys/ioctl.h>
 
 #include "Lmi.h"
@@ -28,6 +38,15 @@ bool ends_with(char const *str, char const *suffix)
 int main (int argc, char *argv[])
 {
 	int ret = 0; // Exit value
+	char *image_path;
+	
+	if(argc > 1) {
+		image_path = argv[1];	
+	} else {
+	    printf("fbwriter v 1.0\n");
+	    printf("Usage: fbwriter <input>\n");
+		return  1;
+    }
 
 	//Use fb0 as default output
 	char *fbdev = "/dev/fb0";
@@ -35,23 +54,17 @@ int main (int argc, char *argv[])
 	if(argc == 3)
 		fbdev = argv[2];
 
-
+#ifndef __DUMMY__
 	int fbfd = open (fbdev, O_RDWR);
-
-
+#else //create dummy framebuffer 
+	int fbfd = open (fbdev, O_RDWR | O_CREAT | O_TRUNC, 0644);	
+	lseek(fbfd, FBSIZE-1, SEEK_SET );
+	write(fbfd, 0, 1);
+	lseek(fbfd, 0, SEEK_SET);
+#endif
+	
 	if (fbfd >= 0)
   	{
-  	  	  		
-		char *image_path;
-
-		if(argc > 1) {
-			image_path = argv[1];	
-		} else {
-	    	printf("fbwriter v 1.0\n");
-	    	printf("Usage: fbwriter <input>\n");
-		return  1;
-    	}
-
 		//Initialize framebuffer
     	struct fb_var_screeninfo vinfo;
 
@@ -61,14 +74,26 @@ int main (int argc, char *argv[])
 		int fb_height = vinfo.yres;
 		int fb_bpp = vinfo.bits_per_pixel;
 		int fb_bytes = fb_bpp / 8;
+		int fb_data_size = fb_width * fb_height * fb_bytes; 
+
+		printf("Framebuffer: %i x %i, %i bits per pixel (%i bytes) \n", fb_width, fb_height, fb_bpp, fb_data_size);
 		
-		printf("Framebuffer: %i x %i, %i bits per pixel\n", fb_width, fb_height, fb_bpp);
+
+		/*
+		int errnum;
 		
-		int fb_data_size = fb_width * fb_height * fb_bytes;
+		char *dst;
+		if((dst = (char*)mmap (NULL, fb_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, (off_t)0)) == (caddr_t) -1)
+		{
+			errnum = errno;
+      		fprintf(stderr, "Value of errno: %d\n", errno);
+      		perror("Error printed by perror");
+      		fprintf(stderr, "Error opening file: %s\n", strerror( errnum ));
+		}
+		*/
 
 
-		char *fbdata =static_cast<char*>( mmap (0, fb_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, (off_t)0));
-		
+		char *fbdata =static_cast<char*>( mmap (NULL, fb_data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, (off_t)0) );
 		//Clear screen
 		memset (fbdata, 0, fb_data_size);
 
@@ -103,6 +128,7 @@ int main (int argc, char *argv[])
 					Color c = lmi->getRGB565FromFrame( x , y, frameIdx );
 					int screen_offset = (( offsetY + y ) * fb_width + ( offsetX + x )) * 4;
 					
+					//printf("(X:%i, y:%i) -> (r:%i, g:%i, b:%i, a:%i)\n", x, y, c.red, c.green, c.blue, c.alpha);
 					fbdata [screen_offset + 0] = c.blue;
 					fbdata [screen_offset + 1] = c.green;
 					fbdata [screen_offset + 2] = c.red;
@@ -147,7 +173,7 @@ int main (int argc, char *argv[])
 						fbdata [screen_offset + 0] = gray;
 						fbdata [screen_offset + 1] = gray;
 						fbdata [screen_offset + 2] = gray;
-						fbdata [screen_offset + 3] = 255;
+						fbdata [screen_offset + 3] = (uint8_t)255;
 						
 						x++;
 					}
@@ -163,25 +189,27 @@ int main (int argc, char *argv[])
     		}
 		}
 
-    
 
-    	
     	int ver = fb_height - 25;
     	for(int hor = 0; hor < fb_width; hor++)
     	{
     		int screen_offset = (ver * fb_width + hor ) * 4;
-    		fbdata [screen_offset + 0] = 255;
-			fbdata [screen_offset + 1] = 255;
-			fbdata [screen_offset + 2] = 255;
+    		fbdata [screen_offset + 0] = (uint8_t)255;
+			fbdata [screen_offset + 1] = (uint8_t)255;
+			fbdata [screen_offset + 2] = (uint8_t)255;
 			fbdata [screen_offset + 3] = 0;
     	}
-  	
+		
   		printf("\033[%d;%dH",10,ver);
 		printf("Press <enter> to quit.\n");
 		cin.get();
 		//Clean up 
+
+		#ifdef __DUMMY__
 		memset (fbdata, 0, fb_data_size);
-		munmap (fbdata, fb_data_size);
+		munmap (fbdata, fb_data_size);		
+		#endif
+
 		close (fbfd);
 		
 	}
